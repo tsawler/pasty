@@ -9,13 +9,15 @@ import (
 )
 
 type Pasty struct {
-	Key       paseto.V4SymmetricKey
-	Purpose   string
-	Expiry    time.Time
-	PublicKey paseto.V4AsymmetricPublicKey
-	SecretKey paseto.V4AsymmetricSecretKey
-	LocalKey  paseto.V4SymmetricKey
-	Issuer    string
+	Key        paseto.V4SymmetricKey
+	Purpose    string
+	Expiry     time.Time
+	PublicKey  paseto.V4AsymmetricPublicKey
+	SecretKey  paseto.V4AsymmetricSecretKey
+	LocalKey   paseto.V4SymmetricKey
+	Issuer     string
+	Audience   string
+	Identifier string
 }
 
 func New(expires time.Time, tokenPurpose ...string) (*Pasty, error) {
@@ -78,22 +80,26 @@ func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any) (string,
 	return tkn, nil
 }
 
+// ValidatePublicToken validates a token signed with a secret key.
+// It will also check issuer, audience and identifier (if supplied),
 func (p *Pasty) ValidatePublicToken(tkn string) (bool, error) {
 	parser := paseto.NewParser()
-	token, err := parser.ParseV4Public(p.PublicKey, tkn, nil)
-	if err != nil {
-		return false, err
-	}
 
 	if p.Issuer != "" {
-		iss, err := token.GetIssuer()
-		if err != nil {
-			return false, err
-		}
+		parser.AddRule(paseto.IssuedBy(p.Issuer))
+	}
 
-		if !strings.EqualFold(p.Issuer, iss) {
-			return false, errors.New("invalid issuer")
-		}
+	if p.Audience != "" {
+		parser.AddRule(paseto.ForAudience(p.Audience))
+	}
+
+	if p.Identifier != "" {
+		parser.AddRule(paseto.IdentifiedBy(p.Identifier))
+	}
+
+	_, err := parser.ParseV4Public(p.PublicKey, tkn, nil)
+	if err != nil {
+		return false, err
 	}
 
 	return true, nil
