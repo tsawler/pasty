@@ -8,16 +8,16 @@ import (
 	"time"
 )
 
+// Pasty is the main type for this module. Create a variable of this type
+// by calling the New function.
 type Pasty struct {
-	Key        paseto.V4SymmetricKey
-	Purpose    string
-	Expiry     time.Time
-	PublicKey  paseto.V4AsymmetricPublicKey
-	SecretKey  paseto.V4AsymmetricSecretKey
-	LocalKey   paseto.V4SymmetricKey
-	Issuer     string
-	Audience   string
-	Identifier string
+	Purpose    string                       // Must be either local or public.
+	PublicKey  paseto.V4AsymmetricPublicKey // The (shareable) public key used for public tokens.
+	SecretKey  paseto.V4AsymmetricSecretKey // the private key used for public tokens.
+	LocalKey   paseto.V4SymmetricKey        // The key used for local tokens.
+	Issuer     string                       // Who issued this token (i.e. example.com).
+	Audience   string                       // Who is the token issued for (i.e. example.com).
+	Identifier string                       // A private identifier for this token\.
 }
 
 func New(expires time.Time, tokenPurpose ...string) (*Pasty, error) {
@@ -42,7 +42,6 @@ func New(expires time.Time, tokenPurpose ...string) (*Pasty, error) {
 	// Create an instance of Pasty.
 	p := &Pasty{
 		Purpose:   purpose,
-		Expiry:    expires,
 		SecretKey: secretKey,
 		PublicKey: publicKey,
 		LocalKey:  localKey,
