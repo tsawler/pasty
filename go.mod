@@ -1,4 +1,4 @@
-module pasty
+module github.com/tsawler/pasty
 
 go 1.20
 

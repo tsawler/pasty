@@ -73,9 +73,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/tsawler/pasty"
 	"log"
 	"os"
-	"pasty"
 	"time"
 )
 
@@ -108,5 +108,4 @@ func main() {
 	// This will output: "token is valid: true"
 	fmt.Println("token is valid:", valid)
 }
-
 ```
