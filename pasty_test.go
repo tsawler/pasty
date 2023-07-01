@@ -66,6 +66,7 @@ func TestPasty_GenerateToken(t *testing.T) {
 func TestPasty_ValidatePublicToken(t *testing.T) {
 	tests := []struct {
 		name    string
+		token   string
 		expires time.Time
 		claims  map[string]any
 		valid   bool
@@ -105,14 +106,25 @@ func TestPasty_ValidatePublicToken(t *testing.T) {
 				"identifier": "example.com",
 			},
 		},
+		{
+			name:    "invalid signature",
+			token:   "v4.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAyMi0wMS0wMVQwMDowMDowMCswMDowMCJ9v3Jt8mx_TdM2ceTGoqwrh4yDFn0XsHvvV_D0DtwQxVrJEBMl0F2caAdgnpKlt4p7xBnx1HcO-SPo8FPp214HDw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9",
+			valid:   false,
+			wantErr: true,
+		},
 	}
 	for _, e := range tests {
 		t.Run(e.name, func(t *testing.T) {
+			token := ""
 			p, _ := New("public", "example.com", "example.com", "example.com")
 
-			token, _ := p.GenerateToken(e.expires, e.claims)
-			if !e.valid {
-				token += "1"
+			if len(e.token) == 0 {
+				token, _ = p.GenerateToken(e.expires, e.claims)
+				if !e.valid {
+					token += "1"
+				}
+			} else {
+				token = e.token
 			}
 
 			got, err := p.ValidatePublicToken(token)

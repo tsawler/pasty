@@ -16,9 +16,8 @@ type Pasty struct {
 // Options holds the options for our Pasty type.
 type Options struct {
 	PublicKey  paseto.V4AsymmetricPublicKey // The (shareable) public key used for public tokens.
-	SecretKey  paseto.V4AsymmetricSecretKey // the private key used for public tokens.
+	SecretKey  paseto.V4AsymmetricSecretKey // the (secret) private key used for public tokens.
 	LocalKey   paseto.V4SymmetricKey        // The key used for local tokens.
-	Expires    time.Time                    // When does this token expire?
 	Purpose    string                       // Must be either local or public.
 	Issuer     string                       // Who issued this token (i.e. example.com).
 	Audience   string                       // Who is the token issued for (i.e. example.com).
@@ -36,7 +35,6 @@ func New(purpose, issuer, audience, identifier string) (*Pasty, error) {
 		PublicKey:  publicKey,
 		SecretKey:  secretKey,
 		LocalKey:   localKey,
-		Expires:    time.Time{},
 		Purpose:    purpose,
 		Issuer:     issuer,
 		Audience:   audience,
