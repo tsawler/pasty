@@ -39,3 +39,29 @@ if err != nil {
     os.Exit(0)
 }
 ```
+
+When the above code runs, you have a variable named `p` of type *pasty.Pasty. With that variable, you can then 
+generate and validate tokens:
+
+```go
+// add some additional claims to the token we're generating.
+claims := make(map[string]any)
+claims["user-id"] = 1
+claims["subject"] = "10"
+
+// generate the token.
+t, err := p.GenerateToken(time.Now().Add(1*time.Hour), claims, "Some footer data")
+if err != nil {
+    log.Println(err)
+    os.Exit(0)
+}
+
+// validate the token:
+valid, err := p.ValidatePublicToken(t)
+if err != nil {
+    log.Println(err)
+}
+
+// This will output: "token is valid: true"
+fmt.Println("token is valid:", valid)
+```
