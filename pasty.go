@@ -10,41 +10,47 @@ import (
 // Pasty is the main type for this module. Create a variable of this type
 // by calling the New function.
 type Pasty struct {
-	Expires    time.Time                    // When does this token expire?
-	Purpose    string                       // Must be either local or public.
+	Options Options
+}
+
+// Options holds the options for our Pasty type.
+type Options struct {
 	PublicKey  paseto.V4AsymmetricPublicKey // The (shareable) public key used for public tokens.
 	SecretKey  paseto.V4AsymmetricSecretKey // the private key used for public tokens.
 	LocalKey   paseto.V4SymmetricKey        // The key used for local tokens.
+	Expires    time.Time                    // When does this token expire?
+	Purpose    string                       // Must be either local or public.
 	Issuer     string                       // Who issued this token (i.e. example.com).
 	Audience   string                       // Who is the token issued for (i.e. example.com).
-	Identifier string                       // A private identifier for this token\.
+	Identifier string                       // A private identifier for this token.
 }
 
-func New(tokenPurpose ...string) (*Pasty, error) {
-	// Set the default purpose to public. If the parameter tokenPurpose
-	// is set, we'll use that instead.
-	purpose := "public"
-
+// New creates a new instance of the Pasty type.
+func New(purpose, issuer, audience, identifier string) (*Pasty, error) {
+	// Generate the keys for our type.
 	secretKey := paseto.NewV4AsymmetricSecretKey()
 	localKey := paseto.NewV4SymmetricKey()
 	publicKey := secretKey.Public()
 
-	// Check for user specified purpose.
-	if len(tokenPurpose) > 0 {
-		purpose = tokenPurpose[0]
+	options := Options{
+		PublicKey:  publicKey,
+		SecretKey:  secretKey,
+		LocalKey:   localKey,
+		Expires:    time.Time{},
+		Purpose:    purpose,
+		Issuer:     issuer,
+		Audience:   audience,
+		Identifier: identifier,
 	}
 
 	// Sanity check.
 	if strings.ToLower(purpose) != "local" && strings.ToLower(purpose) != "public" {
-		return nil, errors.New("purpose must be either local or public")
+		return nil, errors.New("the Options.Purpose value must be either local or public")
 	}
 
 	// Create an instance of Pasty.
 	p := &Pasty{
-		Purpose:   purpose,
-		SecretKey: secretKey,
-		PublicKey: publicKey,
-		LocalKey:  localKey,
+		Options: options,
 	}
 
 	return p, nil
@@ -59,6 +65,9 @@ func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any) (string,
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
 	token.SetExpiration(expires)
+	token.SetJti(p.Options.Identifier)
+	token.SetIssuer(p.Options.Issuer)
+	token.SetAudience(p.Options.Audience)
 
 	for k, v := range claims {
 		err := token.Set(k, v)
@@ -69,10 +78,10 @@ func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any) (string,
 
 	var tkn string
 
-	if p.Purpose == "public" {
-		tkn = token.V4Sign(p.SecretKey, nil)
+	if p.Options.Purpose == "public" {
+		tkn = token.V4Sign(p.Options.SecretKey, nil)
 	} else {
-		tkn = token.V4Encrypt(p.LocalKey, nil)
+		tkn = token.V4Encrypt(p.Options.LocalKey, nil)
 	}
 
 	return tkn, nil
@@ -83,19 +92,19 @@ func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any) (string,
 func (p *Pasty) ValidatePublicToken(tkn string) (bool, error) {
 	parser := paseto.NewParser()
 
-	if p.Issuer != "" {
-		parser.AddRule(paseto.IssuedBy(p.Issuer))
+	if p.Options.Issuer != "" {
+		parser.AddRule(paseto.IssuedBy(p.Options.Issuer))
 	}
 
-	if p.Audience != "" {
-		parser.AddRule(paseto.ForAudience(p.Audience))
+	if p.Options.Audience != "" {
+		parser.AddRule(paseto.ForAudience(p.Options.Audience))
 	}
 
-	if p.Identifier != "" {
-		parser.AddRule(paseto.IdentifiedBy(p.Identifier))
+	if p.Options.Identifier != "" {
+		parser.AddRule(paseto.IdentifiedBy(p.Options.Identifier))
 	}
 
-	_, err := parser.ParseV4Public(p.PublicKey, tkn, nil)
+	_, err := parser.ParseV4Public(p.Options.PublicKey, tkn, nil)
 	if err != nil {
 		return false, err
 	}
@@ -108,19 +117,19 @@ func (p *Pasty) ValidatePublicToken(tkn string) (bool, error) {
 func (p *Pasty) ValidateLocalToken(tkn string) (bool, error) {
 	parser := paseto.NewParser()
 
-	if p.Issuer != "" {
-		parser.AddRule(paseto.IssuedBy(p.Issuer))
+	if p.Options.Issuer != "" {
+		parser.AddRule(paseto.IssuedBy(p.Options.Issuer))
 	}
 
-	if p.Audience != "" {
-		parser.AddRule(paseto.ForAudience(p.Audience))
+	if p.Options.Audience != "" {
+		parser.AddRule(paseto.ForAudience(p.Options.Audience))
 	}
 
-	if p.Identifier != "" {
-		parser.AddRule(paseto.IdentifiedBy(p.Identifier))
+	if p.Options.Identifier != "" {
+		parser.AddRule(paseto.IdentifiedBy(p.Options.Identifier))
 	}
 
-	_, err := parser.ParseV4Local(p.LocalKey, tkn, nil)
+	_, err := parser.ParseV4Local(p.Options.LocalKey, tkn, nil)
 	if err != nil {
 		return false, err
 	}
