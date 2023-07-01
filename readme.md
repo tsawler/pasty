@@ -25,3 +25,17 @@ Install it in the usual way:
 ```
 go get -u github.com/tsawler/pasty
 ```
+
+## Usage
+
+To use this module, import it, and then generate a new Pasty type by calling the `New` function with the four
+required parameters:
+
+```go
+// the four parameters are token type (public or local), issuer, audience, and identifier.
+p, err := pasty.New("public", "example.com", "example.com", "example.com")
+if err != nil {
+    log.Println(err)
+    os.Exit(0)
+}
+```
