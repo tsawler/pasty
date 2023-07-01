@@ -58,7 +58,7 @@ func New(purpose, issuer, audience, identifier string) (*Pasty, error) {
 // parameter is public, it will create a token signed with the paseto.V4AsymmetricSecretKey
 // stored in the receiver as SecretKey. If it is local, it will return a token encrypted with the
 // paseto.V4SymmetricKey stored in the receiver as LocalKey.
-func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any) (string, error) {
+func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any, footer string) (string, error) {
 	token := paseto.NewToken()
 	token.SetIssuedAt(time.Now())
 	token.SetNotBefore(time.Now())
@@ -66,6 +66,9 @@ func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any) (string,
 	token.SetJti(p.Options.Identifier)
 	token.SetIssuer(p.Options.Issuer)
 	token.SetAudience(p.Options.Audience)
+	if len(footer) > 0 {
+		token.SetFooter([]byte(footer))
+	}
 
 	for k, v := range claims {
 		err := token.Set(k, v)

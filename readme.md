@@ -32,8 +32,8 @@ To use this module, import it, and then generate a new Pasty type by calling the
 required parameters:
 
 ```go
-// the four parameters are token type (public or local), issuer, audience, and identifier.
-p, err := pasty.New("public", "example.com", "example.com", "example.com")
+// the four parameters are token type (public or local), issuer, audience, identifier, and footer data.
+p, err := pasty.New("public", "issuer.com", "audience.com", "some-id", "Some footer data")
 if err != nil {
     log.Println(err)
     os.Exit(0)

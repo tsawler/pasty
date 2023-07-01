@@ -53,7 +53,7 @@ func TestPasty_GenerateToken(t *testing.T) {
 		t.Run(e.name, func(t *testing.T) {
 			p, _ := New(e.tokenType, "example.com", "example.com", "example.com")
 
-			_, err := p.GenerateToken(e.expires, e.claims)
+			_, err := p.GenerateToken(e.expires, e.claims, "footer data")
 
 			if (err != nil) != e.errorExpected {
 				t.Errorf("GenerateToken() %s: error = %v, wantErr %v", e.name, err, e.errorExpected)
@@ -116,10 +116,10 @@ func TestPasty_ValidatePublicToken(t *testing.T) {
 	for _, e := range tests {
 		t.Run(e.name, func(t *testing.T) {
 			token := ""
-			p, _ := New("public", "example.com", "example.com", "example.com")
+			p, _ := New("public", "example.com", "audience.com", "some-id")
 
 			if len(e.token) == 0 {
-				token, _ = p.GenerateToken(e.expires, e.claims)
+				token, _ = p.GenerateToken(e.expires, e.claims, "")
 				if !e.valid {
 					token += "1"
 				}
@@ -186,7 +186,7 @@ func TestPasty_ValidateLocalToken(t *testing.T) {
 		t.Run(e.name, func(t *testing.T) {
 			p, _ := New("local", "example.com", "example.com", "example.com")
 
-			token, _ := p.GenerateToken(e.expires, e.claims)
+			token, _ := p.GenerateToken(e.expires, e.claims, "")
 			if !e.valid {
 				token += "1"
 			}
