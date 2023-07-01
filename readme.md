@@ -32,8 +32,8 @@ To use this module, import it, and then generate a new Pasty type by calling the
 required parameters:
 
 ```go
-// the four parameters are token type (public or local), issuer, audience, identifier, and footer data.
-p, err := pasty.New("public", "issuer.com", "audience.com", "some-id", "Some footer data")
+// the four parameters are token type (public or local), issuer, audience, and identifier.
+p, err := pasty.New("public", "issuer.com", "audience.com", "some-id")
 if err != nil {
     log.Println(err)
     os.Exit(0)
@@ -49,8 +49,8 @@ claims := make(map[string]any)
 claims["user-id"] = 1
 claims["subject"] = "10"
 
-// generate the token.
-t, err := p.GenerateToken(time.Now().Add(1*time.Hour), claims, "Some footer data")
+// generate the token, and add footer data if you want to.
+t, err := p.GenerateToken(time.Now().Add(1*time.Hour), claims, "some footer data")
 if err != nil {
     log.Println(err)
     os.Exit(0)
@@ -64,4 +64,49 @@ if err != nil {
 
 // This will output: "token is valid: true"
 fmt.Println("token is valid:", valid)
+```
+
+The full program:
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"pasty"
+	"time"
+)
+
+func main() {
+	// the four parameters are token type (public or local), issuer, audience, and identifier.
+	p, err := pasty.New("public", "issuer.com", "audience.com", "some-id")
+	if err != nil {
+		log.Println(err)
+		os.Exit(0)
+	}
+
+	// add some additional claims to the token we're generating.
+	claims := make(map[string]any)
+	claims["user-id"] = 1
+	claims["subject"] = "10"
+
+	// generate the token, and add footer data if you want to.
+	t, err := p.GenerateToken(time.Now().Add(1*time.Hour), claims, "some footer data")
+	if err != nil {
+		log.Println(err)
+		os.Exit(0)
+	}
+
+	// validate the token:
+	valid, err := p.ValidatePublicToken(t)
+	if err != nil {
+		log.Println(err)
+	}
+
+	// This will output: "token is valid: true"
+	fmt.Println("token is valid:", valid)
+}
+
 ```
