@@ -102,3 +102,28 @@ func (p *Pasty) ValidatePublicToken(tkn string) (bool, error) {
 
 	return true, nil
 }
+
+// ValidateLocalToken validates token with the purpose local.
+// It will also check issuer, audience and identifier (if supplied),
+func (p *Pasty) ValidateLocalToken(tkn string) (bool, error) {
+	parser := paseto.NewParser()
+
+	if p.Issuer != "" {
+		parser.AddRule(paseto.IssuedBy(p.Issuer))
+	}
+
+	if p.Audience != "" {
+		parser.AddRule(paseto.ForAudience(p.Audience))
+	}
+
+	if p.Identifier != "" {
+		parser.AddRule(paseto.IdentifiedBy(p.Identifier))
+	}
+
+	_, err := parser.ParseV4Local(p.LocalKey, tkn, nil)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

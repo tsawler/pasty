@@ -1,25 +1,11 @@
 package pasty
 
 import (
-	"aidanwoods.dev/go-paseto"
 	"testing"
 	"time"
 )
 
 func TestPasty_GenerateToken(t *testing.T) {
-	type fields struct {
-		Expires    time.Time
-		Purpose    string
-		PublicKey  paseto.V4AsymmetricPublicKey
-		SecretKey  paseto.V4AsymmetricSecretKey
-		LocalKey   paseto.V4SymmetricKey
-		Issuer     string
-		Audience   string
-		Identifier string
-	}
-	type args struct {
-		claims map[string]any
-	}
 	tests := []struct {
 		name          string
 		tokenType     string
@@ -141,6 +127,75 @@ func TestPasty_ValidatePublicToken(t *testing.T) {
 			}
 			if got != e.valid {
 				t.Errorf("ValidatePublicToken() got = %v, want %v", got, e.valid)
+			}
+		})
+	}
+}
+
+func TestPasty_ValidateLocalToken(t *testing.T) {
+	tests := []struct {
+		name    string
+		expires time.Time
+		claims  map[string]any
+		valid   bool
+		wantErr bool
+	}{
+		{
+			name:    "valid",
+			expires: time.Now().Add(time.Hour),
+			valid:   true,
+			wantErr: false,
+		},
+		{
+			name:    "expired",
+			expires: time.Now().Add(time.Hour * -1),
+			valid:   false,
+			wantErr: true,
+		},
+		{
+			name:    "invalid with claims",
+			expires: time.Now().Add(time.Hour),
+			valid:   false,
+			wantErr: true,
+			claims: map[string]any{
+				"issuer":     "example.com",
+				"audience":   "wrong.com",
+				"identifier": "example.com",
+			},
+		},
+		{
+			name:    "valid with claims",
+			expires: time.Now().Add(time.Hour),
+			valid:   false,
+			wantErr: true,
+			claims: map[string]any{
+				"issuer":     "example.com",
+				"audience":   "example.com",
+				"identifier": "example.com",
+			},
+		},
+	}
+	for _, e := range tests {
+		t.Run(e.name, func(t *testing.T) {
+			p, _ := New("local")
+			if len(e.claims) > 0 {
+				p.Issuer = e.claims["issuer"].(string)
+				p.Audience = e.claims["audience"].(string)
+				p.Identifier = e.claims["identifier"].(string)
+			}
+
+			token, _ := p.GenerateToken(e.expires, e.claims)
+			if !e.valid {
+				token += "1"
+			}
+
+			got, err := p.ValidateLocalToken(token)
+			if (err != nil) != e.wantErr {
+				t.Errorf("ValidateLocalToken() error = %v, wantErr %v", err, e.wantErr)
+				return
+			}
+			if got != e.valid {
+				t.Errorf("ValidateLocalToken() got = %v, want %v", got, e.valid)
 			}
 		})
 	}
