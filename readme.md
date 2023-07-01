@@ -1,3 +1,12 @@
+[![Version](https://img.shields.io/badge/goversion-1.20.x-blue.svg)](https://golang.org)
+<a href="https://golang.org"><img src="https://img.shields.io/badge/powered_by-Go-3362c2.svg?style=flat-square" alt="Built with GoLang"></a>
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/tsawler/pasty/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tsawler/pasty)](https://goreportcard.com/report/github.com/tsawler/pasty)
+![Tests](https://github.com/tsawler/pasty/actions/workflows/tests.yml/badge.svg)
+<a href="https://pkg.go.dev/github.com/tsawler/pasty"><img src="https://img.shields.io/badge/godoc-reference-%23007d9c.svg"></a>
+[![Go Coverage](https://github.com/tsawler/pasty/wiki/coverage.svg)](https://raw.githack.com/wiki/tsawler/pasty/coverage.html)
+
+
 # Pasty
 
 Pasty is a wrapper which makes working with Paseto tokens as simple as
