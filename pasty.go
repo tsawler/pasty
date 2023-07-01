@@ -3,7 +3,6 @@ package pasty
 import (
 	"aidanwoods.dev/go-paseto"
 	"errors"
-	"log"
 	"strings"
 	"time"
 )
@@ -11,6 +10,7 @@ import (
 // Pasty is the main type for this module. Create a variable of this type
 // by calling the New function.
 type Pasty struct {
+	Expires    time.Time                    // When does this token expire?
 	Purpose    string                       // Must be either local or public.
 	PublicKey  paseto.V4AsymmetricPublicKey // The (shareable) public key used for public tokens.
 	SecretKey  paseto.V4AsymmetricSecretKey // the private key used for public tokens.
@@ -20,8 +20,8 @@ type Pasty struct {
 	Identifier string                       // A private identifier for this token\.
 }
 
-func New(expires time.Time, tokenPurpose ...string) (*Pasty, error) {
-	// Set the default purpose to public. If the variadic parameter tokenPurpose
+func New(tokenPurpose ...string) (*Pasty, error) {
+	// Set the default purpose to public. If the parameter tokenPurpose
 	// is set, we'll use that instead.
 	purpose := "public"
 
@@ -61,7 +61,6 @@ func (p *Pasty) GenerateToken(expires time.Time, claims map[string]any) (string,
 	token.SetExpiration(expires)
 
 	for k, v := range claims {
-		log.Println("setting claim", k, "to", v)
 		err := token.Set(k, v)
 		if err != nil {
 			return "", err
