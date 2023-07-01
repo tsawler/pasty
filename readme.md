@@ -40,7 +40,7 @@ if err != nil {
 }
 ```
 
-When the above code runs, you have a variable named `p` of type *pasty.Pasty. With that variable, you can then 
+When the above code runs, you have a variable named `p` of type `*pasty.Pasty`. With that variable, you can then 
 generate and validate tokens:
 
 ```go
