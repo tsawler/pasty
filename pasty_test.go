@@ -65,12 +65,15 @@ func TestPasty_GenerateToken(t *testing.T) {
 
 func TestPasty_ValidatePublicToken(t *testing.T) {
 	tests := []struct {
-		name    string
-		token   string
-		expires time.Time
-		claims  map[string]any
-		valid   bool
-		wantErr bool
+		name     string
+		token    string
+		expires  time.Time
+		claims   map[string]any
+		testTkn  bool
+		audience string
+		issuer   string
+		valid    bool
+		wantErr  bool
 	}{
 		{
 			name:    "valid",
@@ -112,6 +115,24 @@ func TestPasty_ValidatePublicToken(t *testing.T) {
 			valid:   false,
 			wantErr: true,
 		},
+		{
+			name:     "wrong audience",
+			expires:  time.Now().Add(time.Hour),
+			claims:   nil,
+			testTkn:  true,
+			audience: "bad-domain.com",
+			valid:    false,
+			wantErr:  true,
+		},
+		{
+			name:    "wrong issuer",
+			expires: time.Now().Add(time.Hour),
+			claims:  nil,
+			testTkn: true,
+			issuer:  "bad-domain.com",
+			valid:   false,
+			wantErr: true,
+		},
 	}
 	for _, e := range tests {
 		t.Run(e.name, func(t *testing.T) {
@@ -123,6 +144,8 @@ func TestPasty_ValidatePublicToken(t *testing.T) {
 				if !e.valid {
 					token += "1"
 				}
+			} else if e.testTkn {
+				token = generateTokenForTesting("public", e.issuer, e.audience, "1", e.expires, e.claims)
 			} else {
 				token = e.token
 			}
@@ -141,11 +164,14 @@ func TestPasty_ValidatePublicToken(t *testing.T) {
 
 func TestPasty_ValidateLocalToken(t *testing.T) {
 	tests := []struct {
-		name    string
-		expires time.Time
-		claims  map[string]any
-		valid   bool
-		wantErr bool
+		name     string
+		expires  time.Time
+		claims   map[string]any
+		testTkn  bool
+		audience string
+		issuer   string
+		valid    bool
+		wantErr  bool
 	}{
 		{
 			name:    "valid",
@@ -176,10 +202,27 @@ func TestPasty_ValidateLocalToken(t *testing.T) {
 			valid:   false,
 			wantErr: true,
 			claims: map[string]any{
-				"issuer":     "example.com",
-				"audience":   "example.com",
-				"identifier": "example.com",
+				"foo":   "bar",
+				"alpha": "beta",
 			},
+		},
+		{
+			name:     "wrong audience",
+			expires:  time.Now().Add(time.Hour),
+			claims:   nil,
+			testTkn:  true,
+			audience: "bad-domain.com",
+			valid:    false,
+			wantErr:  true,
+		},
+		{
+			name:    "wrong issuer",
+			expires: time.Now().Add(time.Hour),
+			claims:  nil,
+			testTkn: true,
+			issuer:  "bad-domain.com",
+			valid:   false,
+			wantErr: true,
 		},
 	}
 	for _, e := range tests {
@@ -189,6 +232,11 @@ func TestPasty_ValidateLocalToken(t *testing.T) {
 			token, _ := p.GenerateToken(e.expires, e.claims, "")
 			if !e.valid {
 				token += "1"
+			}
+
+			if e.testTkn {
+				// generate a bad token
+				token = generateTokenForTesting("local", e.issuer, e.audience, "1", e.expires, e.claims)
 			}
 
 			got, err := p.ValidateLocalToken(token)
@@ -230,4 +278,10 @@ func TestNew(t *testing.T) {
 			}
 		})
 	}
+}
+
+func generateTokenForTesting(purpose, issuer, audience, identifier string, expires time.Time, claims map[string]any) string {
+	p, _ := New(purpose, issuer, audience, identifier)
+	tkn, _ := p.GenerateToken(expires, claims, "")
+	return tkn
 }
