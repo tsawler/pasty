@@ -37,7 +37,7 @@ go get -u github.com/tsawler/pasty
 
 ## Usage
 
-To use this module, import it, and then generate a new Pasty type by calling the `New` function with the four
+To use this module, import it, and then generate a new `Pasty` type by calling the `New` function with the four
 required parameters:
 
 ```go
