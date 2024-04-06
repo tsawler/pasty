@@ -41,7 +41,7 @@ To use this module, import it, and then generate a new `Pasty` type by calling t
 required parameters:
 
 ```go
-// the four parameters are token type (public or local), issuer, audience, and identifier.
+// The four parameters are token type (public or local), issuer, audience, and identifier.
 p, err := pasty.New("public", "issuer.com", "audience.com", "some-id")
 if err != nil {
     log.Println(err)
@@ -53,19 +53,19 @@ When the above code runs, you have a variable named `p` of type `*pasty.Pasty`. 
 generate and validate tokens:
 
 ```go
-// add some additional claims to the token we're generating.
+// Add some additional claims to the token we're generating.
 claims := make(map[string]any)
 claims["user-id"] = 1
 claims["subject"] = "10"
 
-// generate the token, and add footer data if you want to.
+// Generate the token, and add footer data if you want to.
 t, err := p.GenerateToken(time.Now().Add(1*time.Hour), claims, "some footer data")
 if err != nil {
     log.Println(err)
     os.Exit(0)
 }
 
-// validate the token:
+// Validate the token:
 valid, err := p.ValidatePublicToken(t)
 if err != nil {
     log.Println(err)
@@ -89,26 +89,26 @@ import (
 )
 
 func main() {
-	// the four parameters are token type (public or local), issuer, audience, and identifier.
+	// The four parameters are token type (public or local), issuer, audience, and identifier.
 	p, err := pasty.New("public", "issuer.com", "audience.com", "some-id")
 	if err != nil {
 		log.Println(err)
 		os.Exit(0)
 	}
 
-	// add some additional claims to the token we're generating.
+	// Add some additional claims to the token we're generating.
 	claims := make(map[string]any)
 	claims["user-id"] = 1
 	claims["subject"] = "10"
 
-	// generate the token, and add footer data if you want to.
+	// Generate the token, and add footer data if you want to.
 	t, err := p.GenerateToken(time.Now().Add(1*time.Hour), claims, "some footer data")
 	if err != nil {
 		log.Println(err)
 		os.Exit(0)
 	}
 
-	// validate the token:
+	// Validate the token:
 	valid, err := p.ValidatePublicToken(t)
 	if err != nil {
 		log.Println(err)
